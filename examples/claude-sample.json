@@ -1,0 +1,30 @@
+[
+  {
+    "uuid": "sample-claude-001",
+    "name": "Setting Up a Node.js Monorepo",
+    "created_at": "2026-03-10T10:00:00Z",
+    "updated_at": "2026-03-10T10:30:00Z",
+    "chat_messages": [
+      {
+        "sender": "human",
+        "text": "I want to set up a monorepo for my Node.js project. What are the options and which do you recommend?",
+        "created_at": "2026-03-10T10:00:00Z"
+      },
+      {
+        "sender": "assistant",
+        "text": "For Node.js monorepos, the main options are:\n\n1. **pnpm workspaces** (recommended for most cases)\n   - Built-in workspace support\n   - Efficient disk usage via hard links\n   - Strict dependency resolution\n\n2. **npm workspaces**\n   - Built into npm 7+\n   - Simpler but less efficient\n\n3. **Yarn workspaces (Berry/v4)**\n   - Plug'n'Play for zero-install\n   - More complex setup\n\n4. **Turborepo** (build orchestration, not a package manager)\n   - Works on top of any workspace\n   - Caching and parallel execution\n\nFor most projects, I recommend **pnpm workspaces** + **tsup** for building. It gives you the best balance of simplicity and performance.",
+        "created_at": "2026-03-10T10:02:00Z"
+      },
+      {
+        "sender": "human",
+        "text": "How do I structure the pnpm workspace?",
+        "created_at": "2026-03-10T10:05:00Z"
+      },
+      {
+        "sender": "assistant",
+        "text": "Here's a typical structure:\n\n```\nmy-project/\n├── pnpm-workspace.yaml\n├── package.json\n├── packages/\n│   ├── core/\n│   │   ├── package.json\n│   │   └── src/\n│   └── utils/\n│       ├── package.json\n│       └── src/\n└── apps/\n    └── api/\n        ├── package.json\n        └── src/\n```\n\nYour `pnpm-workspace.yaml`:\n```yaml\npackages:\n  - 'packages/*'\n  - 'apps/*'\n```\n\nCross-package imports use workspace protocol:\n```json\n{\n  \"dependencies\": {\n    \"@my-project/core\": \"workspace:*\"\n  }\n}\n```",
+        "created_at": "2026-03-10T10:08:00Z"
+      }
+    ]
+  }
+]

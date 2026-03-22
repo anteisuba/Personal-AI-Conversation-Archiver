@@ -1,0 +1,94 @@
+[
+  {
+    "title": "React Hook Form Validation",
+    "create_time": 1710500000,
+    "update_time": 1710503600,
+    "conversation_id": "sample-chatgpt-001",
+    "mapping": {
+      "root": {
+        "id": "root",
+        "children": ["msg1"],
+        "message": null
+      },
+      "msg1": {
+        "id": "msg1",
+        "parent": "root",
+        "children": ["msg2"],
+        "message": {
+          "id": "msg1",
+          "author": { "role": "user" },
+          "content": { "content_type": "text", "parts": ["How do I implement form validation in React using custom hooks?"] },
+          "create_time": 1710500000
+        }
+      },
+      "msg2": {
+        "id": "msg2",
+        "parent": "msg1",
+        "children": ["msg3"],
+        "message": {
+          "id": "msg2",
+          "author": { "role": "assistant" },
+          "content": { "content_type": "text", "parts": ["Here's how to create a custom useForm hook for validation:\n\n1. Create the hook with state for values and errors\n2. Define validation rules as a schema\n3. Validate on submit and on change\n\n```typescript\nfunction useForm<T>(initialValues: T, validate: (values: T) => Record<string, string>) {\n  const [values, setValues] = useState(initialValues);\n  const [errors, setErrors] = useState<Record<string, string>>({});\n  \n  const handleChange = (name: keyof T, value: any) => {\n    setValues(prev => ({ ...prev, [name]: value }));\n  };\n  \n  const handleSubmit = (onSubmit: (values: T) => void) => {\n    const validationErrors = validate(values);\n    setErrors(validationErrors);\n    if (Object.keys(validationErrors).length === 0) {\n      onSubmit(values);\n    }\n  };\n  \n  return { values, errors, handleChange, handleSubmit };\n}\n```\n\nFor more complex validation, consider using Zod with a custom hook."] },
+          "create_time": 1710500100
+        }
+      },
+      "msg3": {
+        "id": "msg3",
+        "parent": "msg2",
+        "children": ["msg4"],
+        "message": {
+          "id": "msg3",
+          "author": { "role": "user" },
+          "content": { "content_type": "text", "parts": ["Can you show me how to integrate Zod for the validation schema?"] },
+          "create_time": 1710500200
+        }
+      },
+      "msg4": {
+        "id": "msg4",
+        "parent": "msg3",
+        "children": [],
+        "message": {
+          "id": "msg4",
+          "author": { "role": "assistant" },
+          "content": { "content_type": "text", "parts": ["Sure! Here's the Zod integration:\n\n```typescript\nimport { z } from 'zod';\n\nconst loginSchema = z.object({\n  email: z.string().email('Invalid email'),\n  password: z.string().min(8, 'Password must be at least 8 characters'),\n});\n\nfunction useZodForm<T extends z.ZodType>(schema: T, initialValues: z.infer<T>) {\n  const [values, setValues] = useState(initialValues);\n  const [errors, setErrors] = useState<Record<string, string>>({});\n  \n  const validate = () => {\n    const result = schema.safeParse(values);\n    if (!result.success) {\n      const fieldErrors: Record<string, string> = {};\n      result.error.issues.forEach(issue => {\n        fieldErrors[issue.path[0] as string] = issue.message;\n      });\n      setErrors(fieldErrors);\n      return false;\n    }\n    setErrors({});\n    return true;\n  };\n  \n  return { values, errors, setValues, validate };\n}\n```\n\nThis gives you type-safe validation with clear error messages."] },
+          "create_time": 1710500300
+        }
+      }
+    }
+  },
+  {
+    "title": "Python Async Best Practices",
+    "create_time": 1710600000,
+    "update_time": 1710603600,
+    "conversation_id": "sample-chatgpt-002",
+    "mapping": {
+      "root": {
+        "id": "root",
+        "children": ["msg1"],
+        "message": null
+      },
+      "msg1": {
+        "id": "msg1",
+        "parent": "root",
+        "children": ["msg2"],
+        "message": {
+          "id": "msg1",
+          "author": { "role": "user" },
+          "content": { "content_type": "text", "parts": ["What are the best practices for async programming in Python? I'm building an API that makes multiple external HTTP calls."] },
+          "create_time": 1710600000
+        }
+      },
+      "msg2": {
+        "id": "msg2",
+        "parent": "msg1",
+        "children": [],
+        "message": {
+          "id": "msg2",
+          "author": { "role": "assistant" },
+          "content": { "content_type": "text", "parts": ["Key best practices for async Python:\n\n1. **Use asyncio.gather for concurrent calls**: When you have multiple independent HTTP calls, run them concurrently.\n\n2. **Use aiohttp instead of requests**: The `requests` library is synchronous. Use `aiohttp` for async HTTP.\n\n3. **Limit concurrency with semaphores**: Don't overwhelm external services.\n\n4. **Handle timeouts**: Always set timeouts on external calls.\n\n5. **Use async context managers**: For proper resource cleanup.\n\nExample:\n```python\nimport asyncio\nimport aiohttp\n\nasync def fetch_all(urls: list[str]) -> list[dict]:\n    semaphore = asyncio.Semaphore(10)  # max 10 concurrent\n    \n    async def fetch_one(session, url):\n        async with semaphore:\n            async with session.get(url, timeout=30) as resp:\n                return await resp.json()\n    \n    async with aiohttp.ClientSession() as session:\n        tasks = [fetch_one(session, url) for url in urls]\n        return await asyncio.gather(*tasks, return_exceptions=True)\n```"] },
+          "create_time": 1710600200
+        }
+      }
+    }
+  }
+]

@@ -1,87 +1,139 @@
-# Personal-AI-Conversation-Archiver
-1. 收集多個 AI 平台的聊天記錄 2. 轉成統一格式 3. 用 LLM 做整理、分類、提煉 4. 輸出為 Obsidian 友好的 Markdown 5. 讓你後續用 Claude Code 持續清理和沉澱
 # AI Convo Archiver
 
-A local-first CLI tool for importing AI conversation logs, refining them into knowledge-oriented notes, and publishing them into an Obsidian vault.
+A local-first CLI tool to import AI conversation logs, refine them into knowledge-oriented notes with LLM, and publish them into Obsidian.
 
-## Why this project exists
+## Why
 
-AI conversations are often valuable, but most of them stay scattered across different tools:
+AI conversations contain valuable knowledge — solutions, decisions, insights — buried in back-and-forth chat. Existing tools only export conversations as-is. This tool performs a **process → knowledge transformation**: it uses LLM to extract structured knowledge from your conversations and publishes it to Obsidian as interconnected notes.
 
-- ChatGPT
-- Claude
-- Gemini
-- Cursor
-- manual notes / copied chat logs
+## Quick Start
 
-This project is designed to turn those conversations into structured, reusable knowledge.
+```bash
+# Install
+npm install -g ai-convo-archiver
 
-Instead of treating AI chats as temporary Q&A, AI Convo Archiver treats them as raw material for a personal knowledge system.
+# Set API key
+export ANTHROPIC_API_KEY=sk-ant-xxx
 
+# Configure Obsidian vault
+echo '{"vaultDir": "~/Documents/Obsidian/AI-Vault"}' > ~/.ai-archive/config.json
+
+# Run with sample data
+ai-archive run examples/chatgpt-sample.json --source chatgpt
+
+# Preview without API calls
+ai-archive run export.json --source chatgpt --dry-run
+```
+
+## Commands
+
+### `run` — Full pipeline
+
+```bash
+ai-archive run <input> --source <chatgpt|claude|manual> [options]
+
+Options:
+  --vault <path>    Obsidian vault path (overrides config)
+  --dry-run         Preview without LLM calls or publishing
+  --overwrite       Overwrite existing notes in vault
+```
+
+### `inspect` — View status
+
+```bash
+ai-archive inspect [--failed] [--json]
+```
+
+### `retry` — Retry failed conversations
+
+```bash
+ai-archive retry [--vault <path>] [--overwrite]
+```
+
+## Pipeline
+
+```
+raw file → [Import] → [Enrich] → [Analyze] → [Publish] → Obsidian
+              ↓           ↓          ↓           ↓
+           raw store   SQLite     SQLite      Markdown
+                      (local     (1 LLM       (vault)
+                       fields)   call)
+```
+
+1. **Import** — parse export file via source adapter (ChatGPT, Claude, manual)
+2. **Enrich** — detect language, estimate tokens, compute content hash
+3. **Analyze** — single LLM call extracts category, tags, summary, key points, and rewritten note
+4. **Publish** — generate Markdown with frontmatter and wikilinks → Obsidian vault
+
+## Supported Sources
+
+| Source | Format | Status |
+|--------|--------|--------|
+| ChatGPT | `conversations.json` from Settings → Export | ✅ v0.1 |
+| Claude | `conversations.json` from Settings → Export | ✅ v0.1 |
+| Manual | `.txt`, `.md`, `.json` | ✅ v0.1 |
+| Gemini | — | 🔜 v0.2 |
+| Cursor | — | 🔜 v0.2 |
+
+## Output
+
+Each conversation becomes a Markdown note in Obsidian:
+
+```markdown
+---
+title: "React Hook Form Validation"
+source: chatgpt
+category: programming
+tags: [react, form-validation, hooks]
+created: 2026-03-15
+confidence: 0.92
 ---
 
-## What it does
+# React Hook Form Validation
 
-AI Convo Archiver provides a pipeline that:
+## 摘要
+...
 
-1. imports conversation files from multiple sources
-2. normalizes them into a unified internal format
-3. enriches them locally with metadata
-4. uses LLMs to analyze and refine the content
-5. stores processing state in SQLite
-6. exports knowledge-oriented Markdown notes into Obsidian
+## 关键要点
+- ...
 
-The goal is not just chat backup.
+## 知识笔记
+[Structured knowledge extracted by LLM]
 
-The goal is **conversation → knowledge**.
+## 相关笔记
+- [[conv_xxx]] (shared tags)
+```
 
----
+Notes with matching tags or projects are automatically linked via `[[wikilinks]]`.
 
-## v0.1 Scope
+## Configuration
 
-This repository currently focuses on a lightweight, practical v0.1.
+Config file: `~/.ai-archive/config.json`
 
-### Included in v0.1
-- CLI-first workflow
-- local-first data storage
-- multi-source import
-- unified normalized conversation model
-- 2-step LLM refinement pipeline
-- SQLite-based job tracking
-- retry / resume support
-- Markdown export to Obsidian
+```json
+{
+  "dataDir": "~/.ai-archive/data",
+  "vaultDir": "~/Documents/Obsidian/AI-Vault",
+  "llm": {
+    "model": "claude-haiku-4-5-20251001"
+  },
+  "promptLanguage": "auto"
+}
+```
 
-### Not included in v0.1
-- browser extension
-- web UI
-- real-time sync
-- vector database
-- semantic search
-- team collaboration
-- Obsidian plugin
+API key via environment variable only (never stored in config):
+```bash
+export ANTHROPIC_API_KEY=sk-ant-xxx
+```
 
----
+## Tech Stack
 
-## Core design principles
+- TypeScript + Node.js
+- [sql.js](https://github.com/sql-js/sql.js) (WASM SQLite — zero native dependencies)
+- [Anthropic SDK](https://github.com/anthropics/anthropic-sdk-typescript) (structured output via tool_use)
+- [commander](https://github.com/tj/commander.js) (CLI)
+- [zod](https://github.com/colinhacks/zod) (schema validation)
 
-- **Local-first**  
-  Code, data, and exports stay under your control.
+## License
 
-- **Source-agnostic**  
-  Different chat platforms are converted into one internal model.
-
-- **Markdown-first**  
-  Final knowledge lives as Markdown notes, not database rows.
-
-- **SQLite for state, not for knowledge**  
-  SQLite tracks jobs, status, metadata, and exported paths.
-
-- **Resume-friendly pipeline**  
-  Long-running processing should be retryable and restartable.
-
----
-
-## High-level flow
-
-```text
-Import -> Normalize -> Enrich Local -> Analyze Meta -> Refine Note -> Persist -> Publish
+MIT

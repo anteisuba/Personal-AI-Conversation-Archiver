@@ -1,0 +1,13 @@
+{
+  "title": "Git Rebase vs Merge Strategy",
+  "messages": [
+    {
+      "role": "user",
+      "content": "When should I use git rebase vs merge?"
+    },
+    {
+      "role": "assistant",
+      "content": "Use **rebase** for:\n- Cleaning up local commits before pushing\n- Keeping a linear history on feature branches\n- Updating a feature branch with main\n\nUse **merge** for:\n- Integrating feature branches into main\n- Preserving the complete history\n- Shared branches (never rebase shared branches)\n\nRule of thumb: rebase local, merge shared."
+    }
+  ]
+}
